@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Přepiš Bibli – trénink psaní</title>
+<style>
+  :root {
+    --bg: #1a1a2e; --surface: #16213e; --accent: #e94560; --accent2: #f5a623;
+    --text: #eaeaea; --muted: #7a8ba6; --correct: #4ade80; --wrong: #f87171;
+    --cursor-color: #e94560; --border: rgba(255,255,255,0.08); --card: #1e2a45;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia','Times New Roman',serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── HEADER ── */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Georgia',serif; font-size: 1.3rem; color: var(--accent); letter-spacing: .05em; display: flex; align-items: center; gap: .5rem; }
+  .logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  nav { display: flex; gap: 1rem; align-items: center; }
+  nav a { color: var(--muted); text-decoration: none; font-family: sans-serif; font-size: .875rem; transition: color .2s; cursor: pointer; background: none; border: none; padding: 0; }
+  nav a:hover, nav a.active { color: var(--text); }
+  .nav-btn-group { display: flex; gap: .5rem; align-items: center; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--border); }
+  .nav-icon-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.06); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: sans-serif; font-size: .75rem; padding: 5px 10px; cursor: pointer; transition: background .15s; white-space: nowrap; }
+  .nav-icon-btn:hover { background: rgba(255,255,255,.12); }
+  .nav-icon-btn.export { color: var(--correct); border-color: rgba(74,222,128,.25); }
+  .nav-icon-btn.import { color: var(--accent2); border-color: rgba(245,166,35,.25); }
+  #import-file-input { display: none; }
+
+  /* ── LAYOUT ── */
+  .main-layout { display: flex; flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+  /* ── SIDEBAR ── */
+  aside { width: 260px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 0; min-height: calc(100vh - 60px); }
+  .aside-label { font-family: sans-serif; font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 1.25rem; margin-bottom: .5rem; }
+  .book-item { display: flex; align-items: flex-start; gap: .75rem; padding: .75rem 1.25rem; cursor: pointer; transition: background .15s; border-left: 3px solid transparent; }
+  .book-item:hover { background: rgba(255,255,255,.04); }
+  .book-item.active { background: rgba(233,69,96,.1); border-left-color: var(--accent); }
+  .book-cover { width: 32px; height: 42px; border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white; }
+  .book-info { flex: 1; min-width: 0; }
+  .book-title { font-family: sans-serif; font-size: .8rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+  .book-author { font-family: sans-serif; font-size: .7rem; color: var(--muted); margin-top: 2px; }
+  .book-progress-bar { height: 2px; background: rgba(255,255,255,.1); border-radius: 1px; margin-top: 6px; overflow: hidden; }
+  .book-progress-fill { height: 100%; background: var(--accent); border-radius: 1px; transition: width .3s; }
+
+  /* ── PAGES ── */
+  .page { display: none; flex: 1; }
+  .page.active { display: flex; flex-direction: column; }
+
+  /* ── PRACTICE PAGE ── */
+  #page-practice { padding: 2rem 2.5rem; max-width: 780px; }
+  .book-header { margin-bottom: 2rem; }
+  .book-header h1 { font-size: 1.6rem; font-weight: normal; color: var(--text); margin-bottom: .25rem; }
+  .book-header .author-line { font-family: sans-serif; font-size: .875rem; color: var(--muted); font-style: italic; }
+  .stats-row { display: flex; gap: 1.5rem; margin-bottom: 2rem; font-family: sans-serif; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.good { color: var(--correct); }
+  .stat-label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .stat-divider { width: 1px; background: var(--border); margin: 4px 0; align-self: stretch; }
+  .typing-area { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem 2.5rem; position: relative; margin-bottom: 1.5rem; }
+  .text-display { font-family: 'Courier New',monospace; font-size: 1.05rem; line-height: 2; letter-spacing: .03em; color: var(--muted); user-select: none; white-space: pre-wrap; word-break: break-word; }
+  .char { transition: color .05s; }
+  .char.correct { color: var(--correct); }
+  .char.wrong { color: var(--wrong); background: rgba(248,113,113,.15); }
+  .char.cursor { background: var(--cursor-color); color: #fff; border-radius: 1px; animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+  .typing-input { position: absolute; top:0;left:0;right:0;bottom:0; opacity:0; width:100%; height:100%; cursor:text; z-index:10; resize:none; border:none; background:transparent; font-size:1rem; padding:0; }
+  .typing-hint { font-family: sans-serif; font-size: .8rem; color: var(--muted); text-align: center; margin-top: .75rem; }
+  .progress-section { margin-bottom: 2rem; }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; font-size: .8rem; color: var(--muted); margin-bottom: .5rem; }
+  .progress-track { height: 6px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent2)); border-radius: 3px; transition: width .3s ease; }
+  .finished-banner { display:none; background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(74,222,128,.05)); border:1px solid rgba(74,222,128,.3); border-radius:8px; padding:1.5rem 2rem; text-align:center; margin-bottom:1.5rem; font-family:sans-serif; }
+  .finished-banner h2 { font-size:1.25rem; color:var(--correct); margin-bottom:.5rem; }
+  .finished-banner p { color:var(--muted); font-size:.875rem; }
+  .btn { font-family:sans-serif; font-size:.8rem; padding:.5rem 1rem; border-radius:5px; border:1px solid var(--border); background:rgba(255,255,255,.05); color:var(--text); cursor:pointer; transition:background .15s; margin-top:1rem; }
+  .btn:hover { background:rgba(255,255,255,.1); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:white; }
+  .btn.primary:hover { background:#cf3a52; }
+  .error-flash { animation: errorShake .3s ease; }
+  @keyframes errorShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  .keyboard-hint { display:flex; gap:1rem; font-family:sans-serif; font-size:.75rem; color:var(--muted); flex-wrap:wrap; }
+  .key { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-bottom-width:2px; border-radius:3px; padding:1px 6px; font-size:.7rem; font-family:monospace; }
+
+  /* ── STATS PAGE ── */
+  #page-stats { padding: 2rem 2.5rem; width: 100%; }
+  #page-stats h1 { font-size: 1.5rem; font-weight: normal; margin-bottom: .25rem; }
+  .subtitle { font-family: sans-serif; font-size: .85rem; color: var(--muted); margin-bottom: 2rem; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; }
+  .stat-card .sc-label { font-family: sans-serif; font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .5rem; }
+  .stat-card .sc-value { font-family: sans-serif; font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sc-value.ca { color: var(--accent); } .sc-value.cg { color: var(--correct); } .sc-value.cb { color: var(--accent2); }
+  .section-title { font-family: sans-serif; font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; margin-top: 2rem; }
+  .book-stats-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: .875rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .book-stats-table th { text-align: left; padding: .75rem 1rem; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); background: rgba(255,255,255,.03); }
+  .book-stats-table td { padding: .85rem 1rem; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--text); vertical-align: middle; }
+  .book-stats-table tr:last-child td { border-bottom: none; }
+  .book-stats-table tr:hover td { background: rgba(255,255,255,.02); }
+  .tbl-bar { height: 4px; background: rgba(255,255,255,.08); border-radius: 2px; min-width: 80px; }
+  .tbl-bar-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent2)); border-radius: 2px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: .7rem; font-weight: 600; }
+  .badge.done { background: rgba(74,222,128,.15); color: var(--correct); }
+  .badge.wip  { background: rgba(233,69,96,.12); color: var(--accent); }
+  .badge.new  { background: rgba(122,139,166,.15); color: var(--muted); }
+  .session-log { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: .5rem; }
+  .s-row { display: grid; grid-template-columns: 145px 1fr 80px 80px 70px; gap: 1rem; padding: .75rem 1rem; font-family: sans-serif; font-size: .8rem; border-bottom: 1px solid rgba(255,255,255,.04); align-items: center; }
+  .s-row:last-child { border-bottom: none; }
+  .s-row.hdr { font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: rgba(255,255,255,.03); }
+  .s-time { color: var(--muted); } .s-book { color: var(--text); } .s-wpm { color: var(--accent); font-weight:600; } .s-acc { color: var(--correct); font-weight:600; } .s-ch { color: var(--muted); }
+  .no-data { padding: 2rem; text-align: center; color: var(--muted); font-family: sans-serif; font-size: .875rem; }
+
+  /* ── MODAL ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem 2.5rem; max-width: 420px; width: 90%; font-family: sans-serif; text-align: center; }
+  .modal-box h3 { font-size: 1.1rem; margin-bottom: .75rem; color: var(--text); }
+  .modal-box p { font-size: .875rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+  .modal-btn { font-family: sans-serif; font-size: .85rem; padding: .55rem 1.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--accent); color: white; cursor: pointer; transition: background .15s; }
+  .modal-btn:hover { background: #cf3a52; }
+
+  @media (max-width: 768px) {
+    aside { display: none; }
+    #page-practice, #page-stats { padding: 1rem; }
+    .s-row { grid-template-columns: 1fr 60px 60px; }
+    .s-time, .s-ch { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📖</div>
+    Přepiš Bibli
+  </div>
+  <nav>
+    <a id="nav-practice" class="active" onclick="showPage('practice')">Procvičovat</a>
+    <a id="nav-stats" onclick="showPage('stats')">Statistiky</a>
+    <div class="nav-btn-group">
+      <button class="nav-icon-btn export" onclick="exportExcel()">⬇ Export .xlsx</button>
+      <button class="nav-icon-btn import" onclick="document.getElementById('import-file-input').click()">⬆ Import .xlsx</button>
+      <input type="file" id="import-file-input" accept=".xlsx" onchange="importExcel(event)">
+    </div>
+  </nav>
+</header>
+
+<div class="main-layout">
+  <aside>
+    <div style="margin-bottom:1.5rem">
+      <div class="aside-label">Knihy</div>
+      <div id="book-list"></div>
+    </div>
+  </aside>
+
+  <!-- PRACTICE -->
+  <div class="page active" id="page-practice">
+    <div class="book-header">
+      <h1 id="current-title">Načítám...</h1>
+      <div class="author-line" id="current-author"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-value accent" id="stat-wpm">0</div><div class="stat-label">slov/min</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><div class="stat-value good" id="stat-acc">100%</div><div class="stat-label">přesnost</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><div class="stat-value" id="stat-chars">0</div><div class="stat-label">znaků</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><div class="stat-value" id="stat-time">0:00</div><div class="stat-label">čas</div></div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-header"><span>Postup v knize</span><span id="progress-pct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="finished-banner" id="finished-banner">
+      <h2>🎉 Hotovo!</h2>
+      <p>Dokončili jste úryvek. Výborně!</p>
+      <button class="btn primary" onclick="restartCurrent()">Znovu</button>
+    </div>
+    <div class="typing-area" id="typing-area" onclick="focusInput()">
+      <textarea class="typing-input" id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+      <div class="text-display" id="text-display"></div>
+    </div>
+    <div class="typing-hint" id="typing-hint">Klikněte sem a začněte psát</div>
+    <div class="keyboard-hint">
+      <span><span class="key">Esc</span> reset</span>
+      <span><span class="key">Backspace</span> opravit</span>
+    </div>
+  </div>
+
+  <!-- STATISTICS -->
+  <div class="page" id="page-stats">
+    <h1>Statistiky</h1>
+    <div class="subtitle">Přehled vašeho postupu a výkonu při přepisování</div>
+    <div class="stats-grid" id="stats-summary-grid"></div>
+    <div class="section-title">Postup v knihách</div>
+    <table class="book-stats-table">
+      <thead><tr><th>Kniha</th><th>Autor</th><th>Postup</th><th>Znaky</th><th>Stav</th></tr></thead>
+      <tbody id="book-stats-body"></tbody>
+    </table>
+    <div class="section-title" style="margin-top:2.5rem">Záznamy sezení <span style="font-weight:400;color:var(--muted)">(posledních 50)</span></div>
+    <div class="session-log" id="session-log"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <h3 id="modal-title"></h3>
+    <p id="modal-body"></p>
+    <button class="modal-btn" onclick="closeModal()">OK</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ── BOOKS ── */
+const BOOKS = [
+  { id:'genesis',              title:'Genesis',          author:'Mojses',                   color:'#7c3aed', initials:'RJ', file:'books/genesis.txt' },
+  { id:'exodus',               title:'Exodus',           author:'Mojses',                   color:'#1d4ed8', initials:'P',  file:'books/exodus.txt' },
+  { id:'leviticus',            title:'Leviticus',        author:'Mojses',                   color:'#d97706', initials:'MP', file:'books/leviticus.txt' },
+  { id:'numeri',               title:'Numeri',           author:'Mojses',                   color:'#b91c1c', initials:'ZT', file:'books/numeri.txt' },
+  { id:'deuteronomium',        title:'Deuteronomium',    author:'Mojses',                   color:'#065f46', initials:'VM', file:'books/deuteronomium.txt' },
+  { id:'jozue',                title:'Jozue',            author:'Jozue',                    color:'#7c3aed', initials:'RJ', file:'books/jozue.txt' },
+  { id:'soudců',               title:'Soudců',           author:'',                         color:'#1d4ed8', initials:'P',  file:'books/soudců.txt' },
+  { id:'rút',                  title:'Rút',              author:'',                         color:'#d97706', initials:'MP', file:'books/rút.txt' },
+];
+
+/* ── STATE ── */
+let currentBook = null, currentText = '', charIndex = 0;
+let errors = 0, totalTyped = 0, startTime = null, timerInterval = null;
+let finished = false, sessionStartChars = 0;
+let progress = {}, sessions = [];
+
+/* ── STORAGE ── */
+function loadStorage() {
+  try { progress = JSON.parse(localStorage.getItem('bt_progress')||'{}'); } catch(e){ progress={}; }
+  try { sessions = JSON.parse(localStorage.getItem('bt_sessions')||'[]'); } catch(e){ sessions=[]; }
+}
+function saveStorage() {
+  localStorage.setItem('bt_progress', JSON.stringify(progress));
+  localStorage.setItem('bt_sessions', JSON.stringify(sessions));
+}
+function getBookProg(id) { return progress[id] || {charIndex:0,pct:0}; }
+
+/* ── PAGE NAV ── */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  if (name==='stats') renderStats();
+}
+
+/* ── SIDEBAR ── */
+function buildBookList() {
+  const list = document.getElementById('book-list');
+  list.innerHTML = '';
+  BOOKS.forEach(book => {
+    const p = getBookProg(book.id);
+    const d = document.createElement('div');
+    d.className = 'book-item'+(currentBook&&currentBook.id===book.id?' active':'');
+    d.innerHTML = `<div class="book-cover" style="background:${book.color}">${book.initials}</div>
+      <div class="book-info">
+        <div class="book-title">${book.title}</div>
+        <div class="book-author">${book.author}</div>
+        <div class="book-progress-bar"><div class="book-progress-fill" style="width:${p.pct||0}%"></div></div>
+      </div>`;
+    d.addEventListener('click', () => { showPage('practice'); loadBook(book); });
+    list.appendChild(d);
+  });
+}
+
+/* ── LOAD BOOK ── */
+async function loadBook(book) {
+  currentBook = book;
+  document.getElementById('current-title').textContent = book.title;
+  document.getElementById('current-author').textContent = book.author;
+  buildBookList();
+  try {
+    const res = await fetch(book.file);
+    currentText = (await res.text()).trim();
+  } catch(e) {
+    currentText = 'Nepodařilo se načíst text. Zkontrolujte, zda jsou soubory ve složce books/.';
+  }
+  const saved = getBookProg(book.id);
+  charIndex = Math.min(saved.charIndex||0, currentText.length);
+  sessionStartChars = charIndex;
+  errors=0; totalTyped=0; finished=false; startTime=null;
+  clearInterval(timerInterval);
+  document.getElementById('finished-banner').style.display='none';
+  document.getElementById('stat-wpm').textContent='0';
+  document.getElementById('stat-acc').textContent='100%';
+  document.getElementById('stat-chars').textContent=charIndex;
+  document.getElementById('stat-time').textContent='0:00';
+  renderText(); updateProgress(); focusInput();
+}
+
+/* ── RENDER TEXT ── */
+function renderText() {
+  let html='';
+  for (let i=0;i<currentText.length;i++) {
+    const ch=currentText[i];
+    const s=ch==='<'?'&lt;':ch==='>'?'&gt;':ch==='&'?'&amp;':ch==='\n'?'↵\n':ch;
+    if (i<charIndex)       html+=`<span class="char correct">${s}</span>`;
+    else if (i===charIndex) html+=`<span class="char cursor">${s}</span>`;
+    else                   html+=`<span class="char">${s}</span>`;
+  }
+  document.getElementById('text-display').innerHTML=html;
+  const cur=document.querySelector('.char.cursor');
+  if(cur) cur.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function focusInput() { document.getElementById('typing-input').focus(); }
+
+/* ── PROGRESS / STATS ── */
+function updateProgress() {
+  const pct=currentText.length?Math.round(charIndex/currentText.length*100):0;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-pct').textContent=pct+'%';
+  document.getElementById('stat-chars').textContent=charIndex;
+  if(currentBook){ progress[currentBook.id]={charIndex,pct}; saveStorage(); buildBookList(); }
+}
+function updateStats() {
+  if(!startTime) return;
+  const el=(Date.now()-startTime)/60000;
+  document.getElementById('stat-wpm').textContent=el>0?Math.round((charIndex/5)/el):0;
+  document.getElementById('stat-acc').textContent=(totalTyped>0?Math.round(((totalTyped-errors)/totalTyped)*100):100)+'%';
+}
+function startTimer() {
+  if(timerInterval) return;
+  startTime=Date.now();
+  timerInterval=setInterval(()=>{
+    const s=Math.floor((Date.now()-startTime)/1000);
+    document.getElementById('stat-time').textContent=Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);
+    updateStats();
+  },500);
+}
+
+/* ── KEYBOARD ── */
+document.getElementById('typing-input').addEventListener('keydown',function(e){
+  if(finished) return;
+  if(e.key==='Escape'){e.preventDefault();restartCurrent();return;}
+  if(e.key==='Tab'){e.preventDefault();return;}
+  if(e.key==='Backspace'){e.preventDefault();if(charIndex>0)charIndex--;renderText();updateProgress();return;}
+  if(e.key.length!==1&&e.key!=='Enter') return;
+  e.preventDefault();
+  const expected=currentText[charIndex], typed=e.key==='Enter'?'\n':e.key;
+  if(!startTime) startTimer();
+  totalTyped++;
+  if(typed===expected){
+    charIndex++; renderText(); updateProgress();
+    if(charIndex>=currentText.length) finishExercise();
+  } else {
+    errors++; updateStats();
+    const a=document.getElementById('typing-area');
+    a.classList.remove('error-flash'); void a.offsetWidth; a.classList.add('error-flash');
+  }
+  document.getElementById('typing-hint').style.display='none';
+});
+document.getElementById('typing-input').addEventListener('focus',()=>{document.getElementById('typing-hint').textContent='Psaní probíhá…';});
+document.getElementById('typing-input').addEventListener('blur',()=>{if(!finished)document.getElementById('typing-hint').textContent='Klikněte sem a pokračujte';});
+
+/* ── FINISH / RESTART ── */
+function saveSession() {
+  if(!startTime||!currentBook||totalTyped<5) return;
+  const dur=Math.floor((Date.now()-startTime)/1000);
+  const el=dur/60;
+  sessions.unshift({
+    date:new Date().toISOString(), bookId:currentBook.id, bookTitle:currentBook.title,
+    wpm:el>0?Math.round((charIndex/5)/el):0,
+    accuracy:totalTyped>0?Math.round(((totalTyped-errors)/totalTyped)*100):100,
+    chars:charIndex-sessionStartChars, durationSec:dur
+  });
+  if(sessions.length>200) sessions=sessions.slice(0,200);
+}
+function finishExercise() {
+  finished=true; clearInterval(timerInterval);
+  document.getElementById('finished-banner').style.display='block';
+  saveSession();
+  if(currentBook) progress[currentBook.id]={charIndex:0,pct:0};
+  saveStorage();
+}
+function restartCurrent() {
+  if(!currentBook) return;
+  saveSession();
+  charIndex=0;errors=0;totalTyped=0;finished=false;startTime=null;
+  clearInterval(timerInterval); sessionStartChars=0;
+  progress[currentBook.id]={charIndex:0,pct:0}; saveStorage();
+  document.getElementById('finished-banner').style.display='none';
+  document.getElementById('stat-wpm').textContent='0';
+  document.getElementById('stat-acc').textContent='100%';
+  document.getElementById('stat-chars').textContent='0';
+  document.getElementById('stat-time').textContent='0:00';
+  renderText(); updateProgress(); focusInput();
+}
+
+/* ── STATS PAGE ── */
+function renderStats() {
+  const totalChars=sessions.reduce((s,r)=>s+(r.chars||0),0);
+  const totalSec=sessions.reduce((s,r)=>s+(r.durationSec||0),0);
+  const avgWpm=sessions.length?Math.round(sessions.reduce((s,r)=>s+(r.wpm||0),0)/sessions.length):0;
+  const avgAcc=sessions.length?Math.round(sessions.reduce((s,r)=>s+(r.accuracy||0),0)/sessions.length):0;
+  const totalMin=Math.floor(totalSec/60);
+  const timeStr=totalMin>=60?Math.floor(totalMin/60)+'h '+(totalMin%60)+'m':totalMin+'m';
+
+  document.getElementById('stats-summary-grid').innerHTML=`
+    <div class="stat-card"><div class="sc-label">Celkové sezení</div><div class="sc-value ca">${sessions.length}</div></div>
+    <div class="stat-card"><div class="sc-label">Celkové znaky</div><div class="sc-value">${totalChars.toLocaleString('cs-CZ')}</div></div>
+    <div class="stat-card"><div class="sc-label">Celkový čas</div><div class="sc-value cb">${timeStr}</div></div>
+    <div class="stat-card"><div class="sc-label">Průměr slov/min</div><div class="sc-value ca">${avgWpm}</div></div>
+    <div class="stat-card"><div class="sc-label">Průměrná přesnost</div><div class="sc-value cg">${avgAcc}%</div></div>`;
+
+  // book table
+  document.getElementById('book-stats-body').innerHTML = BOOKS.map(book=>{
+    const p=getBookProg(book.id), pct=p.pct||0;
+    const st=pct===0?'new':pct>=99?'done':'wip';
+    const sl=st==='done'?'Hotovo':st==='wip'?'Probíhá':'Nezačato';
+    return `<tr>
+      <td><span style="display:inline-flex;align-items:center;gap:8px">
+        <span style="width:20px;height:26px;border-radius:2px;background:${book.color};display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:bold;color:white">${book.initials}</span>
+        ${book.title}</span></td>
+      <td style="color:var(--muted)">${book.author}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="tbl-bar"><div class="tbl-bar-fill" style="width:${pct}%"></div></div>
+        <span style="font-family:sans-serif;font-size:.75rem;color:var(--muted);min-width:32px">${pct}%</span>
+      </div></td>
+      <td style="font-family:sans-serif;font-size:.82rem">${p.charIndex||0}</td>
+      <td><span class="badge ${st}">${sl}</span></td>
+    </tr>`;
+  }).join('');
+
+  // sessions
+  const log=document.getElementById('session-log');
+  if(!sessions.length){ log.innerHTML='<div class="no-data">Žádná sezení zatím. Začněte psát!</div>'; return; }
+  log.innerHTML=`<div class="s-row hdr"><span>Datum a čas</span><span>Kniha</span><span>Slov/min</span><span>Přesnost</span><span>Znaky</span></div>`
+    +sessions.slice(0,50).map(s=>{
+      const d=new Date(s.date);
+      const ds=d.toLocaleDateString('cs-CZ')+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="s-row"><span class="s-time">${ds}</span><span class="s-book">${s.bookTitle}</span><span class="s-wpm">${s.wpm}</span><span class="s-acc">${s.accuracy}%</span><span class="s-ch">${s.chars}</span></div>`;
+    }).join('');
+}
+
+/* ── EXCEL EXPORT ── */
+function exportExcel() {
+  const wb = XLSX.utils.book_new();
+  const now = new Date().toLocaleString('cs-CZ');
+
+  // Sheet 1: Progress
+  const pRows=[['ID knihy','Název','Autor','Pozice znaku','Postup (%)','Exportováno']];
+  BOOKS.forEach(b=>{ const p=getBookProg(b.id); pRows.push([b.id,b.title,b.author,p.charIndex||0,p.pct||0,now]); });
+  const wsP=XLSX.utils.aoa_to_sheet(pRows);
+  wsP['!cols']=[{wch:24},{wch:22},{wch:26},{wch:14},{wch:12},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,wsP,'Postup v knihách');
+
+  // Sheet 2: Sessions
+  const sRows=[['Datum','ID knihy','Název knihy','Slov/min','Přesnost (%)','Znaky','Délka (s)']];
+  sessions.forEach(s=>sRows.push([new Date(s.date).toLocaleString('cs-CZ'),s.bookId,s.bookTitle,s.wpm,s.accuracy,s.chars||0,s.durationSec||0]));
+  const wsS=XLSX.utils.aoa_to_sheet(sRows);
+  wsS['!cols']=[{wch:20},{wch:24},{wch:22},{wch:10},{wch:14},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,wsS,'Záznamy sezení');
+
+  // Sheet 3: Summary
+  const totalChars=sessions.reduce((s,r)=>s+(r.chars||0),0);
+  const totalMin=Math.floor(sessions.reduce((s,r)=>s+(r.durationSec||0),0)/60);
+  const avgWpm=sessions.length?Math.round(sessions.reduce((s,r)=>s+(r.wpm||0),0)/sessions.length):0;
+  const avgAcc=sessions.length?Math.round(sessions.reduce((s,r)=>s+(r.accuracy||0),0)/sessions.length):0;
+  const sumRows=[
+    ['Přehled statistik',''],['Exportováno',now],['',''],
+    ['Celkový počet sezení',sessions.length],['Celkový počet znaků',totalChars],
+    ['Celkový čas (minuty)',totalMin],['Průměrná rychlost (slov/min)',avgWpm],['Průměrná přesnost (%)',avgAcc]
+  ];
+  const wsSum=XLSX.utils.aoa_to_sheet(sumRows);
+  wsSum['!cols']=[{wch:32},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,wsSum,'Souhrn');
+
+  XLSX.writeFile(wb,`prepisovac-knih-${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* ── EXCEL IMPORT ── */
+function importExcel(event) {
+  const file=event.target.files[0]; if(!file) return;
+  event.target.value='';
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try {
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const wsP=wb.Sheets['Postup v knihách'];
+      if(!wsP){ showModal('Chyba importu','Soubor neobsahuje list „Postup v knihách". Importujte soubor exportovaný z této aplikace.'); return; }
+
+      let imported=0;
+      XLSX.utils.sheet_to_json(wsP,{header:1}).slice(1).forEach(row=>{
+        const id=row[0], ci=parseInt(row[3])||0, pct=parseInt(row[4])||0;
+        if(id&&BOOKS.find(b=>b.id===id)){ progress[id]={charIndex:ci,pct}; imported++; }
+      });
+
+      let newS=0;
+      const wsS=wb.Sheets['Záznamy sezení'];
+      if(wsS){
+        const existing=new Set(sessions.map(s=>s.date+'|'+s.bookId));
+        XLSX.utils.sheet_to_json(wsS,{header:1}).slice(1).forEach(row=>{
+          if(!row[0]||!row[1]) return;
+          let iso;
+          try {
+            const m=String(row[0]).match(/(\d+)\.\s*(\d+)\.\s*(\d{4})\s+(\d+):(\d+)/);
+            iso=m?new Date(+m[3],+m[2]-1,+m[1],+m[4],+m[5]).toISOString():new Date(row[0]).toISOString();
+          } catch(ex){ iso=new Date().toISOString(); }
+          const key=iso+'|'+row[1];
+          if(!existing.has(key)){
+            sessions.push({date:iso,bookId:row[1],bookTitle:row[2]||'',wpm:+row[3]||0,accuracy:+row[4]||0,chars:+row[5]||0,durationSec:+row[6]||0});
+            newS++;
+          }
+        });
+        sessions.sort((a,b)=>new Date(b.date)-new Date(a.date));
+        if(sessions.length>200) sessions=sessions.slice(0,200);
+      }
+
+      saveStorage(); buildBookList();
+      if(currentBook){ const p=getBookProg(currentBook.id); charIndex=Math.min(p.charIndex||0,currentText.length); renderText(); updateProgress(); }
+      showModal('Import dokončen ✓',`Obnoveno ${imported} knih${wsS?` a přidáno ${newS} nových záznamů sezení`:''}.`);
+    } catch(err){
+      showModal('Chyba importu','Soubor nelze přečíst. Ujistěte se, že importujete platný .xlsx soubor z této aplikace.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ── MODAL ── */
+function showModal(title,body){ document.getElementById('modal-title').textContent=title; document.getElementById('modal-body').textContent=body; document.getElementById('modal-overlay').classList.add('open'); }
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
+document.getElementById('modal-overlay').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+
+/* ── INIT ── */
+loadStorage();
+buildBookList();
+loadBook(BOOKS[0]);
+</script>
+</body>
+</html>
