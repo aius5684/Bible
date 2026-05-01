@@ -6,25 +6,26 @@
 <title>Přepiš Bibli – trénink psaní</title>
 <style>
   :root {
-    --bg: #1a1a2e; --surface: #16213e; --accent: #e94560; --accent2: #f5a623;
-    --text: #eaeaea; --muted: #7a8ba6; --correct: #4ade80; --wrong: #f87171;
-    --cursor-color: #e94560; --border: rgba(255,255,255,0.08); --card: #1e2a45;
+    --bg: #131f24; --surface: #1a2e36; --accent: #58cc02; --accent2: #ffc800;
+    --accent-red: #ff4b4b; --accent-blue: #1cb0f6;
+    --text: #f0f4f8; --muted: #7a8ba6; --correct: #58cc02; --wrong: #ff4b4b;
+    --cursor-color: #1cb0f6; --border: rgba(255,255,255,0.09); --card: #1e2f38;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Georgia','Times New Roman',serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
   /* ── HEADER ── */
-  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
+  header { background: var(--surface); border-bottom: 2px solid var(--accent); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
   .logo { font-family: 'Georgia',serif; font-size: 1.3rem; color: var(--accent); letter-spacing: .05em; display: flex; align-items: center; gap: .5rem; }
   .logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
   nav { display: flex; gap: 1rem; align-items: center; }
   nav a { color: var(--muted); text-decoration: none; font-family: sans-serif; font-size: .875rem; transition: color .2s; cursor: pointer; background: none; border: none; padding: 0; }
-  nav a:hover, nav a.active { color: var(--text); }
+  nav a:hover, nav a.active { color: var(--accent); }
   .nav-btn-group { display: flex; gap: .5rem; align-items: center; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--border); }
-  .nav-icon-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.06); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: sans-serif; font-size: .75rem; padding: 5px 10px; cursor: pointer; transition: background .15s; white-space: nowrap; }
-  .nav-icon-btn:hover { background: rgba(255,255,255,.12); }
-  .nav-icon-btn.export { color: var(--correct); border-color: rgba(74,222,128,.25); }
-  .nav-icon-btn.import { color: var(--accent2); border-color: rgba(245,166,35,.25); }
+  .nav-icon-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.06); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: sans-serif; font-size: .75rem; padding: 6px 12px; cursor: pointer; transition: background .15s,transform .1s; white-space: nowrap; font-weight: 600; }
+  .nav-icon-btn:hover { background: rgba(255,255,255,.12); transform: translateY(-1px); }
+  .nav-icon-btn.export { color: var(--correct); border-color: rgba(88,204,2,.3); }
+  .nav-icon-btn.import { color: var(--accent2); border-color: rgba(255,200,0,.3); }
   #import-file-input { display: none; }
 
   /* ── LAYOUT ── */
@@ -32,16 +33,16 @@
 
   /* ── SIDEBAR ── */
   aside { width: 260px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 0; min-height: calc(100vh - 60px); }
-  .aside-label { font-family: sans-serif; font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 1.25rem; margin-bottom: .5rem; }
+  .aside-label { font-family: sans-serif; font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 1.25rem; margin-bottom: .5rem; }
   .book-item { display: flex; align-items: flex-start; gap: .75rem; padding: .75rem 1.25rem; cursor: pointer; transition: background .15s; border-left: 3px solid transparent; }
   .book-item:hover { background: rgba(255,255,255,.04); }
-  .book-item.active { background: rgba(233,69,96,.1); border-left-color: var(--accent); }
-  .book-cover { width: 32px; height: 42px; border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white; }
+  .book-item.active { background: rgba(88,204,2,.1); border-left-color: var(--accent); }
+  .book-cover { width: 32px; height: 42px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
   .book-info { flex: 1; min-width: 0; }
-  .book-title { font-family: sans-serif; font-size: .8rem; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+  .book-title { font-family: sans-serif; font-size: .8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
   .book-author { font-family: sans-serif; font-size: .7rem; color: var(--muted); margin-top: 2px; }
-  .book-progress-bar { height: 2px; background: rgba(255,255,255,.1); border-radius: 1px; margin-top: 6px; overflow: hidden; }
-  .book-progress-fill { height: 100%; background: var(--accent); border-radius: 1px; transition: width .3s; }
+  .book-progress-bar { height: 3px; background: rgba(255,255,255,.1); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .book-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; }
 
   /* ── PAGES ── */
   .page { display: none; flex: 1; }
@@ -55,55 +56,61 @@
   .stats-row { display: flex; gap: 1.5rem; margin-bottom: 2rem; font-family: sans-serif; flex-wrap: wrap; }
   .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-  .stat-value.accent { color: var(--accent); }
+  .stat-value.accent { color: var(--accent2); }
   .stat-value.good { color: var(--correct); }
+  .stat-value.bad { color: var(--accent-red); }
   .stat-label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
   .stat-divider { width: 1px; background: var(--border); margin: 4px 0; align-self: stretch; }
-  .typing-area { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem 2.5rem; position: relative; margin-bottom: 1.5rem; }
-  .text-display { font-family: 'Courier New',monospace; font-size: 1.05rem; line-height: 2; letter-spacing: .03em; color: var(--muted); user-select: none; white-space: pre-wrap; word-break: break-word; }
-  .char { transition: color .05s; }
+  .typing-area { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 2rem 2.5rem; position: relative; margin-bottom: 1.5rem; transition: border-color .2s; box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+  .typing-area.focused { border-color: var(--accent-blue); box-shadow: 0 4px 20px rgba(28,176,246,.15); }
+  .text-display { font-family: 'Courier New',monospace; font-size: 1.05rem; line-height: 2.2; letter-spacing: .03em; color: var(--muted); user-select: none; white-space: pre-wrap; word-break: break-word; }
+  .char { transition: color .05s, background .05s; }
   .char.correct { color: var(--correct); }
-  .char.wrong { color: var(--wrong); background: rgba(248,113,113,.15); }
-  .char.cursor { background: var(--cursor-color); color: #fff; border-radius: 1px; animation: blink 1s step-end infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+  .char.wrong { color: white; background: var(--accent-red); border-radius: 2px; }
+  .char.cursor { background: var(--cursor-color); color: #fff; border-radius: 2px; animation: blink 1s step-end infinite; box-shadow: 0 0 8px rgba(28,176,246,.6); }
+  .char.cursor.wrong-cursor { background: var(--accent-red); box-shadow: 0 0 8px rgba(255,75,75,.6); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
   .typing-input { position: absolute; top:0;left:0;right:0;bottom:0; opacity:0; width:100%; height:100%; cursor:text; z-index:10; resize:none; border:none; background:transparent; font-size:1rem; padding:0; }
   .typing-hint { font-family: sans-serif; font-size: .8rem; color: var(--muted); text-align: center; margin-top: .75rem; }
   .progress-section { margin-bottom: 2rem; }
   .progress-header { display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; font-size: .8rem; color: var(--muted); margin-bottom: .5rem; }
-  .progress-track { height: 6px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; }
-  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent2)); border-radius: 3px; transition: width .3s ease; }
-  .finished-banner { display:none; background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(74,222,128,.05)); border:1px solid rgba(74,222,128,.3); border-radius:8px; padding:1.5rem 2rem; text-align:center; margin-bottom:1.5rem; font-family:sans-serif; }
+  .progress-track { height: 8px; background: rgba(255,255,255,.06); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--accent),#89e219); border-radius: 99px; transition: width .3s ease; }
+  .finished-banner { display:none; background:linear-gradient(135deg,rgba(88,204,2,.18),rgba(88,204,2,.06)); border:2px solid rgba(88,204,2,.4); border-radius:12px; padding:1.5rem 2rem; text-align:center; margin-bottom:1.5rem; font-family:sans-serif; }
   .finished-banner h2 { font-size:1.25rem; color:var(--correct); margin-bottom:.5rem; }
   .finished-banner p { color:var(--muted); font-size:.875rem; }
-  .btn { font-family:sans-serif; font-size:.8rem; padding:.5rem 1rem; border-radius:5px; border:1px solid var(--border); background:rgba(255,255,255,.05); color:var(--text); cursor:pointer; transition:background .15s; margin-top:1rem; }
-  .btn:hover { background:rgba(255,255,255,.1); }
-  .btn.primary { background:var(--accent); border-color:var(--accent); color:white; }
-  .btn.primary:hover { background:#cf3a52; }
-  .error-flash { animation: errorShake .3s ease; }
-  @keyframes errorShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  .btn { font-family:sans-serif; font-size:.85rem; font-weight:600; padding:.55rem 1.25rem; border-radius:8px; border:2px solid var(--border); background:rgba(255,255,255,.05); color:var(--text); cursor:pointer; transition:background .15s,transform .1s; margin-top:1rem; }
+  .btn:hover { background:rgba(255,255,255,.1); transform:translateY(-1px); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:white; box-shadow:0 4px 0 #3d8f00; }
+  .btn.primary:hover { background:#4db802; transform:translateY(-1px); }
+  .btn.primary:active { transform:translateY(2px); box-shadow:0 2px 0 #3d8f00; }
+  .error-flash { animation: errorShake .25s ease; }
+  @keyframes errorShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
   .keyboard-hint { display:flex; gap:1rem; font-family:sans-serif; font-size:.75rem; color:var(--muted); flex-wrap:wrap; }
-  .key { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-bottom-width:2px; border-radius:3px; padding:1px 6px; font-size:.7rem; font-family:monospace; }
+  .key { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-bottom-width:2px; border-radius:4px; padding:2px 7px; font-size:.7rem; font-family:monospace; }
+  /* Error counter badge */
+  .error-badge { display:inline-flex; align-items:center; gap:4px; font-family:sans-serif; font-size:.75rem; color:var(--accent-red); font-weight:700; }
 
-  /* ── STATS PAGE ── */
   #page-stats { padding: 2rem 2.5rem; width: 100%; }
   #page-stats h1 { font-size: 1.5rem; font-weight: normal; margin-bottom: .25rem; }
   .subtitle { font-family: sans-serif; font-size: .85rem; color: var(--muted); margin-bottom: 2rem; }
   .stats-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 1rem; margin-bottom: 2.5rem; }
-  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; }
-  .stat-card .sc-label { font-family: sans-serif; font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .5rem; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; transition: transform .15s; }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card .sc-label { font-family: sans-serif; font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .5rem; font-weight: 600; }
   .stat-card .sc-value { font-family: sans-serif; font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .sc-value.ca { color: var(--accent); } .sc-value.cg { color: var(--correct); } .sc-value.cb { color: var(--accent2); }
-  .section-title { font-family: sans-serif; font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; margin-top: 2rem; }
-  .book-stats-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: .875rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .book-stats-table th { text-align: left; padding: .75rem 1rem; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); background: rgba(255,255,255,.03); }
+  .sc-value.ca { color: var(--accent2); } .sc-value.cg { color: var(--correct); } .sc-value.cb { color: var(--accent-blue); }
+  .section-title { font-family: sans-serif; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; margin-top: 2rem; }
+  .book-stats-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: .875rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .book-stats-table th { text-align: left; padding: .75rem 1rem; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); background: rgba(255,255,255,.03); }
   .book-stats-table td { padding: .85rem 1rem; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--text); vertical-align: middle; }
   .book-stats-table tr:last-child td { border-bottom: none; }
   .book-stats-table tr:hover td { background: rgba(255,255,255,.02); }
-  .tbl-bar { height: 4px; background: rgba(255,255,255,.08); border-radius: 2px; min-width: 80px; }
-  .tbl-bar-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent2)); border-radius: 2px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: .7rem; font-weight: 600; }
-  .badge.done { background: rgba(74,222,128,.15); color: var(--correct); }
-  .badge.wip  { background: rgba(233,69,96,.12); color: var(--accent); }
+  .tbl-bar { height: 5px; background: rgba(255,255,255,.08); border-radius: 3px; min-width: 80px; }
+  .tbl-bar-fill { height: 100%; background: linear-gradient(90deg,var(--accent),#89e219); border-radius: 3px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: .7rem; font-weight: 700; }
+  .badge.done { background: rgba(88,204,2,.18); color: var(--correct); }
+  .badge.wip  { background: rgba(255,200,0,.15); color: var(--accent2); }
   .badge.new  { background: rgba(122,139,166,.15); color: var(--muted); }
   .session-log { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: .5rem; }
   .s-row { display: grid; grid-template-columns: 145px 1fr 80px 80px 70px; gap: 1rem; padding: .75rem 1rem; font-family: sans-serif; font-size: .8rem; border-bottom: 1px solid rgba(255,255,255,.04); align-items: center; }
@@ -233,6 +240,8 @@ let currentBook = null, currentText = '', charIndex = 0;
 let errors = 0, totalTyped = 0, startTime = null, timerInterval = null;
 let finished = false, sessionStartChars = 0;
 let progress = {}, sessions = [];
+// wrongChars: Map from position → wrongly-typed char (allows typing past mistakes)
+let wrongChars = new Map();
 
 /* ── STORAGE ── */
 function loadStorage() {
@@ -288,7 +297,7 @@ async function loadBook(book) {
   const saved = getBookProg(book.id);
   charIndex = Math.min(saved.charIndex||0, currentText.length);
   sessionStartChars = charIndex;
-  errors=0; totalTyped=0; finished=false; startTime=null;
+  errors=0; totalTyped=0; finished=false; startTime=null; wrongChars=new Map();
   clearInterval(timerInterval);
   document.getElementById('finished-banner').style.display='none';
   document.getElementById('stat-wpm').textContent='0';
@@ -304,13 +313,20 @@ function renderText() {
   for (let i=0;i<currentText.length;i++) {
     const ch=currentText[i];
     const s=ch==='<'?'&lt;':ch==='>'?'&gt;':ch==='&'?'&amp;':ch==='\n'?'↵\n':ch;
-    if (i<charIndex)       html+=`<span class="char correct">${s}</span>`;
-    else if (i===charIndex) html+=`<span class="char cursor">${s}</span>`;
-    else                   html+=`<span class="char">${s}</span>`;
+    if (i===charIndex) {
+      const isCursorWrong = wrongChars.has(i);
+      html+=`<span class="char cursor${isCursorWrong?' wrong-cursor':''}">${s}</span>`;
+    } else if (i<charIndex) {
+      if (wrongChars.has(i)) html+=`<span class="char wrong">${s}</span>`;
+      else                   html+=`<span class="char correct">${s}</span>`;
+    } else {
+      html+=`<span class="char">${s}</span>`;
+    }
   }
   document.getElementById('text-display').innerHTML=html;
+  // Autoscroll: keep cursor visible with some top padding
   const cur=document.querySelector('.char.cursor');
-  if(cur) cur.scrollIntoView({block:'nearest',behavior:'smooth'});
+  if(cur) cur.scrollIntoView({block:'center',behavior:'smooth'});
 }
 function focusInput() { document.getElementById('typing-input').focus(); }
 
@@ -338,29 +354,94 @@ function startTimer() {
   },500);
 }
 
+/* ── AUDIO ── */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function getAudioCtx() { if(!audioCtx) audioCtx=new AudioCtx(); return audioCtx; }
+
+function playClick() {
+  try {
+    const ctx=getAudioCtx();
+    const osc=ctx.createOscillator(); const g=ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type='sine'; osc.frequency.setValueAtTime(880,ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660,ctx.currentTime+0.04);
+    g.gain.setValueAtTime(0.06,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.06);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.06);
+  } catch(e){}
+}
+
+function playError() {
+  try {
+    const ctx=getAudioCtx();
+    const osc=ctx.createOscillator(); const g=ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type='sawtooth'; osc.frequency.setValueAtTime(220,ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(110,ctx.currentTime+0.12);
+    g.gain.setValueAtTime(0.12,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.14);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.14);
+  } catch(e){}
+}
+
 /* ── KEYBOARD ── */
 document.getElementById('typing-input').addEventListener('keydown',function(e){
   if(finished) return;
   if(e.key==='Escape'){e.preventDefault();restartCurrent();return;}
   if(e.key==='Tab'){e.preventDefault();return;}
-  if(e.key==='Backspace'){e.preventDefault();if(charIndex>0)charIndex--;renderText();updateProgress();return;}
+
+  if(e.key==='Backspace'){
+    e.preventDefault();
+    if(charIndex>0){
+      charIndex--;
+      // Remove wrong mark when stepping back
+      wrongChars.delete(charIndex);
+      renderText(); updateProgress();
+    }
+    return;
+  }
+
   if(e.key.length!==1&&e.key!=='Enter') return;
   e.preventDefault();
+
   const expected=currentText[charIndex], typed=e.key==='Enter'?'\n':e.key;
   if(!startTime) startTimer();
   totalTyped++;
+
   if(typed===expected){
-    charIndex++; renderText(); updateProgress();
+    wrongChars.delete(charIndex); // clear any previous wrong mark at this pos
+    charIndex++;
+    playClick();
+    renderText(); updateProgress();
     if(charIndex>=currentText.length) finishExercise();
   } else {
-    errors++; updateStats();
+    errors++;
+    wrongChars.set(charIndex, typed); // mark as wrong but DON'T advance
+    charIndex++; // advance past mistake so user can keep typing
+    playError(); updateStats();
+    // Visual shake on the typing area
     const a=document.getElementById('typing-area');
     a.classList.remove('error-flash'); void a.offsetWidth; a.classList.add('error-flash');
+    renderText(); updateProgress();
+    if(charIndex>=currentText.length) finishExercise();
   }
+
+  // Update error stat color
+  const accEl=document.getElementById('stat-acc');
+  const acc=totalTyped>0?Math.round(((totalTyped-errors)/totalTyped)*100):100;
+  accEl.className='stat-value '+(acc>=95?'good':acc>=80?'accent':'bad');
+
   document.getElementById('typing-hint').style.display='none';
 });
-document.getElementById('typing-input').addEventListener('focus',()=>{document.getElementById('typing-hint').textContent='Psaní probíhá…';});
-document.getElementById('typing-input').addEventListener('blur',()=>{if(!finished)document.getElementById('typing-hint').textContent='Klikněte sem a pokračujte';});
+document.getElementById('typing-input').addEventListener('focus',()=>{
+  document.getElementById('typing-hint').textContent='Psaní probíhá…';
+  document.getElementById('typing-area').classList.add('focused');
+});
+document.getElementById('typing-input').addEventListener('blur',()=>{
+  if(!finished)document.getElementById('typing-hint').textContent='Klikněte sem a pokračujte';
+  document.getElementById('typing-area').classList.remove('focused');
+});
 
 /* ── FINISH / RESTART ── */
 function saveSession() {
@@ -385,7 +466,7 @@ function finishExercise() {
 function restartCurrent() {
   if(!currentBook) return;
   saveSession();
-  charIndex=0;errors=0;totalTyped=0;finished=false;startTime=null;
+  charIndex=0;errors=0;totalTyped=0;finished=false;startTime=null; wrongChars=new Map();
   clearInterval(timerInterval); sessionStartChars=0;
   progress[currentBook.id]={charIndex:0,pct:0}; saveStorage();
   document.getElementById('finished-banner').style.display='none';
